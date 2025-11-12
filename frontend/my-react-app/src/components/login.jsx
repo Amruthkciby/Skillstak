@@ -43,29 +43,71 @@ export default function Login() {
 
   const containerStyle = {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f172a 0%, #312e81 50%, #1f2937 100%)',
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 45%, #0c4a6e 100%)',
     fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif",
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    padding: '0 60px 80px'
   };
 
   const contentWrapperStyle = {
     flex: 1,
+    display: 'grid',
+    alignItems: 'stretch',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+    gap: '48px',
+    maxWidth: '1200px',
+    margin: '100px auto 60px'
+  };
+
+  const infoPanelStyle = {
+    background: 'rgba(15, 23, 42, 0.72)',
+    borderRadius: '28px',
+    padding: '52px 48px',
+    color: '#f8fafc',
+    boxShadow: '0 38px 90px rgba(15, 23, 42, 0.55)',
+    border: '1px solid rgba(148, 163, 184, 0.18)',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '32px 16px'
+    flexDirection: 'column',
+    gap: '20px'
+  };
+
+  const infoTitleStyle = {
+    fontSize: '2.6rem',
+    fontWeight: 700,
+    letterSpacing: '-1px',
+    lineHeight: 1.2
+  };
+
+  const infoListStyle = {
+    listStyle: 'none',
+    padding: 0,
+    margin: '0',
+    display: 'grid',
+    gap: '14px',
+    fontSize: '0.95rem',
+    opacity: 0.9
+  };
+
+  const infoBulletStyle = {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'flex-start',
+    background: 'rgba(59, 130, 246, 0.12)',
+    borderRadius: '16px',
+    padding: '14px 18px',
+    border: '1px solid rgba(59, 130, 246, 0.22)'
   };
 
   const cardStyle = {
-    width: 'min(440px, 100%)',
-    background: 'rgba(15, 23, 42, 0.9)',
-    borderRadius: '22px',
-    padding: '48px 40px',
-    boxShadow: '0 25px 65px rgba(15, 23, 42, 0.45)',
-    border: '1px solid rgba(148, 163, 184, 0.15)',
+    width: '100%',
+    background: 'rgba(15, 23, 42, 0.92)',
+    borderRadius: '24px',
+    padding: '56px 48px',
+    boxShadow: '0 32px 90px rgba(15, 23, 42, 0.6)',
+    border: '1px solid rgba(148, 163, 184, 0.18)',
     color: '#e2e8f0',
-    backdropFilter: 'blur(16px)'
+    backdropFilter: 'blur(18px)'
   };
 
   const titleStyle = {
@@ -150,6 +192,27 @@ export default function Login() {
     <div style={containerStyle}>
       <Navbarhome/>
       <div style={contentWrapperStyle}>
+        <aside style={infoPanelStyle}>
+          <div style={infoTitleStyle}>Welcome back to SkillTrack</div>
+          <p style={{ fontSize: '1.05rem', opacity: 0.75, lineHeight: 1.7 }}>
+            Sign in to resume logging your learning hours, capture new courses, and discover how your
+            skills have evolved over time.
+          </p>
+          <ul style={infoListStyle}>
+            <li style={infoBulletStyle}>
+              <span style={{ fontWeight: 700, color: '#bfdbfe' }}>Secure</span>
+              <span>JSON Web Token authentication keeps your progress safe and session-aware.</span>
+            </li>
+            <li style={infoBulletStyle}>
+              <span style={{ fontWeight: 700, color: '#bfdbfe' }}>Fast</span>
+              <span>React and Django pair up for responsive updates and real-time timelines.</span>
+            </li>
+            <li style={infoBulletStyle}>
+              <span style={{ fontWeight: 700, color: '#bfdbfe' }}>Insightful</span>
+              <span>Track hours vs targets, import resources, and access weekly summaries instantly.</span>
+            </li>
+          </ul>
+        </aside>
         <div style={cardStyle}>
           <h2 style={titleStyle}>Login</h2>
           {error && <div style={errorStyle}>{error}</div>}

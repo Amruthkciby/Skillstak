@@ -47,26 +47,67 @@ export default function Register() {
 
   const containerStyle = {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #134e4a 100%)',
+    background: 'linear-gradient(140deg, #082f49 0%, #1e293b 55%, #0f172a 100%)',
     fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif",
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    padding: '0 64px 80px'
   };
 
   const contentWrapperStyle = {
     flex: 1,
+    display: 'grid',
+    alignItems: 'stretch',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+    gap: '52px',
+    maxWidth: '1240px',
+    margin: '100px auto 70px'
+  };
+
+  const infoPanelStyle = {
+    background: 'rgba(15, 23, 42, 0.75)',
+    borderRadius: '28px',
+    padding: '56px 52px',
+    color: '#e2e8f0',
+    boxShadow: '0 38px 90px rgba(15, 23, 42, 0.55)',
+    border: '1px solid rgba(148, 163, 184, 0.16)',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '32px 16px'
+    flexDirection: 'column',
+    gap: '22px'
+  };
+
+  const infoTitleStyle = {
+    fontSize: '2.7rem',
+    fontWeight: 700,
+    letterSpacing: '-0.9px',
+    lineHeight: 1.2
+  };
+
+  const infoListStyle = {
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
+    display: 'grid',
+    gap: '14px',
+    fontSize: '0.98rem'
+  };
+
+  const infoItemStyle = {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'flex-start',
+    background: 'rgba(45, 212, 191, 0.1)',
+    borderRadius: '16px',
+    padding: '14px 18px',
+    border: '1px solid rgba(45, 212, 191, 0.25)'
   };
 
   const cardStyle = {
-    width: 'min(520px, 100%)',
-    background: 'rgba(15, 23, 42, 0.88)',
-    borderRadius: '24px',
-    padding: '48px 40px',
-    boxShadow: '0 30px 70px rgba(15, 23, 42, 0.45)',
+    width: '100%',
+    background: 'rgba(15, 23, 42, 0.92)',
+    borderRadius: '26px',
+    padding: '56px 52px',
+    boxShadow: '0 38px 90px rgba(15, 23, 42, 0.58)',
     border: '1px solid rgba(148, 163, 184, 0.18)',
     color: '#e2e8f0',
     backdropFilter: 'blur(18px)'
@@ -165,6 +206,27 @@ export default function Register() {
     <div style={containerStyle}>
       <Navbarhome/>
       <div style={contentWrapperStyle}>
+        <aside style={infoPanelStyle}>
+          <div style={infoTitleStyle}>Create your SkillTrack workspace</div>
+          <p style={{ fontSize: '1.05rem', opacity: 0.78, lineHeight: 1.7 }}>
+            A single dashboard unifies goals, resources, timelines, and weekly insights. Set up your account
+            and start capturing your learning momentum.
+          </p>
+          <ul style={infoListStyle}>
+            <li style={infoItemStyle}>
+              <span style={{ fontWeight: 700, color: '#a7f3d0' }}>Own your roadmap</span>
+              <span>Define goals per skill, record target hours, and let the dashboard visualise progress.</span>
+            </li>
+            <li style={infoItemStyle}>
+              <span style={{ fontWeight: 700, color: '#a7f3d0' }}>Track proactively</span>
+              <span>Log daily activities, import courses with a link, and annotate what you learned.</span>
+            </li>
+            <li style={infoItemStyle}>
+              <span style={{ fontWeight: 700, color: '#a7f3d0' }}>Review weekly</span>
+              <span>Generate mock summary emails that highlight hours logged and goals touched.</span>
+            </li>
+          </ul>
+        </aside>
         <div style={cardStyle}>
           <h2 style={titleStyle}>Create Account</h2>
           {msg && <div style={messageStyle}>{msg}</div>}

@@ -983,7 +983,7 @@ export default function Dashboard() {
 								</select>
 							</div>
 							<div style={{ ...styles.formGroup, gridColumn: 'span 1' }}>
-								<label style={styles.label}>Hours</label>
+								<label style={styles.label}>Target hours</label>
 								<input
 									style={styles.input}
 									type="number"
@@ -1304,41 +1304,68 @@ export default function Dashboard() {
 									<th style={styles.cell}>Type</th>
 									<th style={styles.cell}>Platform</th>
 									<th style={styles.cell}>Progress</th>
-									<th style={styles.cell}>Hours</th>
+									<th style={styles.cell}>Target Hours</th>
 									<th style={styles.cell}>Difficulty</th>
 									<th style={styles.cell}>Notes</th>
 									<th style={{ ...styles.cellLast, textAlign: 'right' }}>Actions</th>
 								</tr>
 							</thead>
 							<tbody>
-								{goals.map(goal => (
-									<tr key={goal.id} style={styles.row}>
+								{goals.map(goal => {
+									const targetHours = Number(goal.hours) || 0
+									const loggedHours = activityHoursByGoal[goal.id] || 0
+									const percentRaw = targetHours > 0
+										? Math.round((loggedHours / targetHours) * 100)
+										: (loggedHours > 0 ? 100 : 0)
+									const progressPercent = Math.max(0, percentRaw)
+									const progressFillPercent = Math.max(0, Math.min(100, progressPercent))
+									const progressFillStyle = {
+										...styles.progressFill,
+										width: `${progressFillPercent}%`,
+										background: progressPercent >= 100
+											? 'linear-gradient(90deg, #22c55e, #4ade80)'
+											: styles.progressFill.background
+									}
+									const targetLabel = targetHours > 0
+										? `${formatDecimalHours(targetHours)} target`
+										: 'No target set'
+									return (
+										<tr key={goal.id} style={styles.row}>
 										<td style={styles.cellFirst}>{goal.skillName}</td>
 										<td style={styles.cell}>{RESOURCE_LABEL_MAP[goal.resourceType] || goal.resourceType}</td>
 										<td style={styles.cell}>{goal.platform}</td>
 										<td style={styles.cell}>
-											<select
-												style={styles.select}
-												value={goal.status}
-												onChange={e => updateGoalField(goal.id, 'status', e.target.value, true)}
-											>
-												{STATUS_OPTIONS.map(option => (
-													<option key={option.value} value={option.value}>{option.label}</option>
-												))}
-											</select>
-											{' '}
-											<span
-												style={{
-													...styles.badge,
-													...(goal.status === 'completed'
-														? styles.badgeCompleted
-														: goal.status === 'in_progress'
-														? styles.badgeProgress
-														: styles.badgeStarted)
-												}}
-											>
-												{STATUS_LABEL_MAP[goal.status] || goal.status}
-											</span>
+											<div style={styles.progressSelectRow}>
+												<select
+													style={styles.select}
+													value={goal.status}
+													onChange={e => updateGoalField(goal.id, 'status', e.target.value, true)}
+												>
+													{STATUS_OPTIONS.map(option => (
+														<option key={option.value} value={option.value}>{option.label}</option>
+													))}
+												</select>
+												<span
+													style={{
+														...styles.badge,
+														...(goal.status === 'completed'
+															? styles.badgeCompleted
+															: goal.status === 'in_progress'
+															? styles.badgeProgress
+															: styles.badgeStarted)
+													}}
+												>
+													{STATUS_LABEL_MAP[goal.status] || goal.status}
+												</span>
+											</div>
+											<div style={styles.progressTrack}>
+												<div style={progressFillStyle} />
+											</div>
+											<div style={styles.progressMeta}>
+												<span>{formatDecimalHours(loggedHours)} logged</span>
+												<span>{targetLabel}</span>
+												<span>{progressPercent}%</span>
+											</div>
 										</td>
 										<td style={styles.cell}>
 											<input
@@ -1389,7 +1416,8 @@ export default function Dashboard() {
 											</button>
 										</td>
 									</tr>
-								))}
+									)
+								})}
 							</tbody>
 						</table>
 					)}
