@@ -537,6 +537,14 @@ export default function Dashboard() {
 	}
 
 	// ---------------------------- Insights ----------------------------
+	const activityHoursByGoal = useMemo(() => {
+		return activities.reduce((acc, activity) => {
+			const key = activity.goalId
+			acc[key] = (acc[key] || 0) + (Number(activity.hours) || 0)
+			return acc
+		}, {})
+	}, [activities])
+
 	const insights = useMemo(() => {
 		const total = goals.length
 		const statusCounts = goals.reduce((acc, goal) => {
@@ -547,8 +555,10 @@ export default function Dashboard() {
 		const completed = statusCounts.completed || 0
 		const inProgress = statusCounts.in_progress || 0
 		const started = statusCounts.started || 0
-		const totalHoursRaw = goals.reduce((sum, goal) => sum + (Number(goal.hours) || 0), 0)
-		const totalHours = Math.round(totalHoursRaw * 10) / 10
+		const totalPlannedHoursRaw = goals.reduce((sum, goal) => sum + (Number(goal.hours) || 0), 0)
+		const totalPlannedHours = Math.round(totalPlannedHoursRaw * 10) / 10
+		const totalLoggedHoursRaw = activities.reduce((sum, activity) => sum + (Number(activity.hours) || 0), 0)
+		const totalLoggedHours = Math.round(totalLoggedHoursRaw * 10) / 10
 		const averageDifficulty = total === 0
 			? 0
 			: Math.round((goals.reduce((sum, goal) => sum + (Number(goal.difficulty) || 0), 0) / total) * 10) / 10
@@ -578,14 +588,15 @@ export default function Dashboard() {
 			completed,
 			inProgress,
 			started,
-			totalHours,
+			totalPlannedHours,
+			totalLoggedHours,
 			averageDifficulty,
 			completionRate,
 			byResourceType,
 			byPlatform,
 			bySkill
 		}
-	}, [goals])
+	}, [goals, activities])
 
 	const timelineGroups = useMemo(() => {
 		const grouped = activities.reduce((acc, activity) => {
@@ -716,6 +727,7 @@ export default function Dashboard() {
 		},
 		statLabel: { fontSize: '12px', opacity: 0.7 },
 		statValue: { fontSize: '22px', fontWeight: 700 },
+		statMeta: { fontSize: '12px', opacity: 0.65, marginTop: '4px' },
 		table: {
 			width: '100%',
 			borderCollapse: 'separate',
@@ -773,6 +785,31 @@ export default function Dashboard() {
 			borderRadius: '8px',
 			padding: '6px 10px',
 			cursor: 'pointer'
+		},
+		progressSelectRow: {
+			display: 'flex',
+			alignItems: 'center',
+			gap: '8px',
+			marginBottom: '8px'
+		},
+		progressTrack: {
+			height: '6px',
+			background: 'rgba(255,255,255,0.12)',
+			borderRadius: '999px',
+			overflow: 'hidden',
+			position: 'relative'
+		},
+		progressFill: {
+			height: '100%',
+			background: 'linear-gradient(90deg, #38bdf8, #6366f1, #a855f7)',
+			transition: 'width 0.3s ease'
+		},
+		progressMeta: {
+			display: 'flex',
+			justifyContent: 'space-between',
+			fontSize: '0.75rem',
+			opacity: 0.75,
+			marginTop: '6px'
 		},
 		courseList: {
 			display: 'grid',
@@ -1193,8 +1230,9 @@ export default function Dashboard() {
 							<div style={styles.statValue}>{insights.completed} ({insights.completionRate}%)</div>
 						</div>
 						<div style={styles.statCard}>
-							<div style={styles.statLabel}>Total Hours</div>
-							<div style={styles.statValue}>{insights.totalHours}</div>
+							<div style={styles.statLabel}>Logged Hours</div>
+							<div style={styles.statValue}>{insights.totalLoggedHours}</div>
+							<div style={styles.statMeta}>Planned: {insights.totalPlannedHours}</div>
 						</div>
 						<div style={styles.statCard}>
 							<div style={styles.statLabel}>Avg. Difficulty</div>
