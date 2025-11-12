@@ -9,7 +9,7 @@ import Dashboard from "./components/dashboard";
 export default function App() {
   return (
     <Router>
-      <div style={{ padding: "20px" }}>
+      <div style={{ minHeight: "100vh", width: "100%" }}>
         <Routes>
           <Route path="/" element={<Home/>} />
           <Route path="/register" element={<Register />} />

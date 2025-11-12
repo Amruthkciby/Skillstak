@@ -1,25 +1,49 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // if using react-router
+import { useNavigate } from 'react-router-dom';
 import Navbarhome from './navbarhome';
+import { useTheme } from '../themeContext';
 
 export default function Login() {
-  const [form, setForm] = useState({ username: '', password: ''});
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  const palette = {
+    pageBg: isDark ? '#0f172a' : '#f3f4f6',
+    cardBg: isDark ? 'rgba(15, 23, 42, 0.92)' : '#ffffff',
+    cardBorder: isDark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(15, 23, 42, 0.08)',
+    cardShadow: isDark ? '0 32px 80px rgba(15, 23, 42, 0.6)' : '0 24px 60px rgba(15, 23, 42, 0.08)',
+    textPrimary: isDark ? '#e2e8f0' : '#0f172a',
+    textSecondary: isDark ? 'rgba(226, 232, 240, 0.78)' : '#64748b',
+    inputBg: isDark ? 'rgba(15, 23, 42, 0.6)' : '#f8fafc',
+    inputBorder: isDark ? 'rgba(148, 163, 184, 0.35)' : '#cbd5f5',
+    inputText: isDark ? '#f8fafc' : '#0f172a',
+    accent: '#2563eb',
+    accentGradient: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #9333ea 100%)',
+    focusShadow: isDark ? '0 0 0 3px rgba(59, 130, 246, 0.35)' : '0 0 0 3px rgba(59, 130, 246, 0.2)',
+    helperLink: isDark ? '#c084fc' : '#2563eb',
+    helperText: isDark ? 'rgba(226, 232, 240, 0.74)' : '#64748b',
+    errorBg: isDark ? 'rgba(248, 113, 113, 0.18)' : 'rgba(248, 113, 113, 0.12)',
+    errorBorder: isDark ? 'rgba(248, 113, 113, 0.4)' : 'rgba(248, 113, 113, 0.24)',
+    errorText: isDark ? '#fecaca' : '#b91c1c',
+  };
+
+  const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState(null);
   const navigate = useNavigate?.() || (() => {});
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (event) => setForm({ ...form, [event.target.name]: event.target.value });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError(null);
     try {
-      const res = await fetch('http://127.0.0.1:8000/mainapp/token/', {
+      const response = await fetch('http://127.0.0.1:8000/mainapp/token/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
-      if (res.ok) {
+      const data = await response.json();
+      if (response.ok) {
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
         navigate('/dashboard');
@@ -32,194 +56,133 @@ export default function Login() {
   };
 
   const handleInputFocus = (event) => {
-    event.target.style.borderColor = '#667eea';
-    event.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.2)';
+    event.target.style.borderColor = palette.accent;
+    event.target.style.boxShadow = palette.focusShadow;
   };
 
   const handleInputBlur = (event) => {
-    event.target.style.borderColor = '#e0e0e0';
+    event.target.style.borderColor = palette.inputBorder;
     event.target.style.boxShadow = 'none';
   };
 
   const containerStyle = {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 45%, #0c4a6e 100%)',
+    background: palette.pageBg,
     fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif",
     display: 'flex',
     flexDirection: 'column',
-    padding: '0 60px 80px'
+    transition: 'background 0.3s ease',
   };
 
   const contentWrapperStyle = {
     flex: 1,
-    display: 'grid',
-    alignItems: 'stretch',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-    gap: '48px',
-    maxWidth: '1200px',
-    margin: '100px auto 60px'
-  };
-
-  const infoPanelStyle = {
-    background: 'rgba(15, 23, 42, 0.72)',
-    borderRadius: '28px',
-    padding: '52px 48px',
-    color: '#f8fafc',
-    boxShadow: '0 38px 90px rgba(15, 23, 42, 0.55)',
-    border: '1px solid rgba(148, 163, 184, 0.18)',
     display: 'flex',
-    flexDirection: 'column',
-    gap: '20px'
-  };
-
-  const infoTitleStyle = {
-    fontSize: '2.6rem',
-    fontWeight: 700,
-    letterSpacing: '-1px',
-    lineHeight: 1.2
-  };
-
-  const infoListStyle = {
-    listStyle: 'none',
-    padding: 0,
-    margin: '0',
-    display: 'grid',
-    gap: '14px',
-    fontSize: '0.95rem',
-    opacity: 0.9
-  };
-
-  const infoBulletStyle = {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'flex-start',
-    background: 'rgba(59, 130, 246, 0.12)',
-    borderRadius: '16px',
-    padding: '14px 18px',
-    border: '1px solid rgba(59, 130, 246, 0.22)'
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '60px 24px',
   };
 
   const cardStyle = {
     width: '100%',
-    background: 'rgba(15, 23, 42, 0.92)',
-    borderRadius: '24px',
-    padding: '56px 48px',
-    boxShadow: '0 32px 90px rgba(15, 23, 42, 0.6)',
-    border: '1px solid rgba(148, 163, 184, 0.18)',
-    color: '#e2e8f0',
-    backdropFilter: 'blur(18px)'
+    maxWidth: '420px',
+    background: palette.cardBg,
+    borderRadius: '18px',
+    padding: '40px 36px',
+    boxShadow: palette.cardShadow,
+    border: `1px solid ${palette.cardBorder}`,
+    color: palette.textPrimary,
+    transition: 'background 0.3s ease, border 0.3s ease, color 0.3s ease',
   };
 
   const titleStyle = {
-    fontSize: '2.4rem',
+    fontSize: '1.9rem',
     fontWeight: 700,
-    marginBottom: '28px',
+    marginBottom: '24px',
     textAlign: 'center',
     letterSpacing: '-0.5px',
-    background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #38bdf8 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent'
   };
 
   const inputGroupStyle = {
-    marginBottom: '22px'
+    marginBottom: '18px',
   };
 
   const labelStyle = {
     display: 'block',
     fontSize: '0.95rem',
     fontWeight: 600,
-    color: 'rgba(226, 232, 240, 0.9)',
-    marginBottom: '10px',
-    letterSpacing: '0.3px'
+    color: palette.textSecondary,
+    marginBottom: '8px',
+    letterSpacing: '0.2px',
   };
 
   const inputStyle = {
     width: '100%',
-    padding: '14px 16px',
+    padding: '12px 14px',
     fontSize: '1rem',
-    border: '2px solid #e0e0e0',
-    borderRadius: '12px',
+    border: `1px solid ${palette.inputBorder}`,
+    borderRadius: '10px',
     outline: 'none',
     transition: 'all 0.25s ease',
     boxSizing: 'border-box',
-    background: 'rgba(15, 23, 42, 0.6)',
-    color: '#f1f5f9'
+    background: palette.inputBg,
+    color: palette.inputText,
   };
 
   const buttonStyle = {
     width: '100%',
-    padding: '14px',
-    fontSize: '1.05rem',
+    padding: '12px',
+    fontSize: '1rem',
     fontWeight: 600,
-    color: '#f8fafc',
-    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)',
+    color: '#ffffff',
+    background: palette.accentGradient,
     border: 'none',
-    borderRadius: '12px',
+    borderRadius: '10px',
     cursor: 'pointer',
-    transition: 'all 0.25s ease',
+    transition: 'transform 0.25s ease, box-shadow 0.25s ease',
     marginTop: '6px',
-    boxShadow: '0 15px 35px rgba(99, 102, 241, 0.35)'
+    boxShadow: isDark ? '0 18px 36px rgba(79, 70, 229, 0.45)' : '0 15px 30px rgba(79, 70, 229, 0.25)',
   };
 
   const helperStyle = {
     marginTop: '20px',
     textAlign: 'center',
     fontSize: '0.95rem',
-    color: 'rgba(148, 163, 184, 0.75)'
+    color: palette.helperText,
   };
 
   const helperLinkStyle = {
-    color: '#a855f7',
+    color: palette.helperLink,
     textDecoration: 'none',
-    fontWeight: 600
+    fontWeight: 600,
   };
 
   const errorStyle = {
-    background: 'rgba(248, 113, 113, 0.18)',
-    color: '#fecaca',
-    border: '1px solid rgba(248, 113, 113, 0.4)',
+    background: palette.errorBg,
+    color: palette.errorText,
+    border: `1px solid ${palette.errorBorder}`,
     padding: '14px 18px',
     borderRadius: '12px',
     marginBottom: '22px',
     fontSize: '0.95rem',
     fontWeight: 500,
     textAlign: 'center',
-    boxShadow: '0 10px 25px rgba(248, 113, 113, 0.18)'
+    boxShadow: '0 10px 25px rgba(248, 113, 113, 0.18)',
   };
 
   return (
     <div style={containerStyle}>
-      <Navbarhome/>
+      <Navbarhome />
       <div style={contentWrapperStyle}>
-        <aside style={infoPanelStyle}>
-          <div style={infoTitleStyle}>Welcome back to SkillTrack</div>
-          <p style={{ fontSize: '1.05rem', opacity: 0.75, lineHeight: 1.7 }}>
-            Sign in to resume logging your learning hours, capture new courses, and discover how your
-            skills have evolved over time.
-          </p>
-          <ul style={infoListStyle}>
-            <li style={infoBulletStyle}>
-              <span style={{ fontWeight: 700, color: '#bfdbfe' }}>Secure</span>
-              <span>JSON Web Token authentication keeps your progress safe and session-aware.</span>
-            </li>
-            <li style={infoBulletStyle}>
-              <span style={{ fontWeight: 700, color: '#bfdbfe' }}>Fast</span>
-              <span>React and Django pair up for responsive updates and real-time timelines.</span>
-            </li>
-            <li style={infoBulletStyle}>
-              <span style={{ fontWeight: 700, color: '#bfdbfe' }}>Insightful</span>
-              <span>Track hours vs targets, import resources, and access weekly summaries instantly.</span>
-            </li>
-          </ul>
-        </aside>
         <div style={cardStyle}>
           <h2 style={titleStyle}>Login</h2>
           {error && <div style={errorStyle}>{error}</div>}
           <form onSubmit={handleSubmit}>
             <div style={inputGroupStyle}>
-              <label style={labelStyle}>Username</label>
+              <label style={labelStyle} htmlFor="username">
+                Username
+              </label>
               <input
+                id="username"
                 name="username"
                 value={form.username}
                 onChange={handleChange}
@@ -230,8 +193,11 @@ export default function Login() {
               />
             </div>
             <div style={inputGroupStyle}>
-              <label style={labelStyle}>Password</label>
+              <label style={labelStyle} htmlFor="password">
+                Password
+              </label>
               <input
+                id="password"
                 name="password"
                 type="password"
                 value={form.password}
@@ -245,13 +211,15 @@ export default function Login() {
             <button
               type="submit"
               style={buttonStyle}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 20px 40px rgba(99, 102, 241, 0.45)';
+              onMouseEnter={(event) => {
+                event.currentTarget.style.transform = 'translateY(-2px)';
+                event.currentTarget.style.boxShadow = isDark
+                  ? '0 24px 44px rgba(79, 70, 229, 0.55)'
+                  : '0 20px 40px rgba(79, 70, 229, 0.35)';
               }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 15px 35px rgba(99, 102, 241, 0.35)';
+              onMouseLeave={(event) => {
+                event.currentTarget.style.transform = 'translateY(0)';
+                event.currentTarget.style.boxShadow = buttonStyle.boxShadow;
               }}
             >
               Login

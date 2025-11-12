@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import Navbarhome from './navbarhome';
+import { useTheme } from '../themeContext';
 
 export default function Home() {
-  const [apiData, setApiData] = useState(null);   // store API response
-  const [error, setError] = useState(null);       // store any error
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const [apiData, setApiData] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch the data from Django REST API
-    fetch('http://127.0.0.1:8000/mainapp/hello/')   // <-- your Django endpoint
+    fetch('http://127.0.0.1:8000/mainapp/hello/')
       .then((response) => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -16,165 +18,104 @@ export default function Home() {
       })
       .then((data) => setApiData(data))
       .catch((err) => setError(err.message));
-  }, []); // empty array = run once on component mount
+  }, []);
+
+  const palette = {
+    pageBg: isDark ? '#0f172a' : '#f8fafc',
+    textPrimary: isDark ? '#e2e8f0' : '#0f172a',
+    subText: isDark ? 'rgba(226, 232, 240, 0.75)' : '#64748b',
+    cardBg: isDark ? 'rgba(15, 23, 42, 0.82)' : '#ffffff',
+    cardBorder: isDark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(15, 23, 42, 0.08)',
+    cardShadow: isDark ? '0 24px 65px rgba(15, 23, 42, 0.55)' : '0 24px 65px rgba(15, 23, 42, 0.08)',
+    badgeBg: isDark ? 'rgba(99, 102, 241, 0.14)' : 'rgba(37, 99, 235, 0.12)',
+    badgeText: isDark ? '#dbe4ff' : '#1d4ed8',
+  };
 
   const containerStyle = {
     minHeight: '100vh',
-    background: 'radial-gradient(circle at top left, #8b5cf6 0%, #312e81 40%, #0f172a 100%)',
-    padding: '0 48px 64px',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-  };
-
-  const mainLayoutStyle = {
-    maxWidth: '1200px',
-    margin: '120px auto 60px',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-    gap: '48px',
-    alignItems: 'stretch'
-  };
-
-  const heroStyle = {
-    background: 'rgba(15, 23, 42, 0.78)',
-    borderRadius: '24px',
-    padding: '48px 42px',
-    color: '#f8fafc',
-    boxShadow: '0 32px 80px rgba(15, 23, 42, 0.55)',
-    border: '1px solid rgba(148, 163, 184, 0.18)'
-  };
-
-  const titleStyle = {
-    fontSize: '3.4rem',
-    fontWeight: 700,
-    lineHeight: 1.1,
-    marginBottom: '18px',
-    background: 'linear-gradient(135deg, #f97316, #f472b6, #38bdf8)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    letterSpacing: '-1.5px'
-  };
-
-  const subtitleStyle = {
-    fontSize: '1.1rem',
-    opacity: 0.8,
-    lineHeight: 1.6,
-    marginBottom: '30px'
-  };
-
-  const highlightListStyle = {
-    listStyle: 'none',
-    padding: 0,
-    margin: 0,
-    display: 'grid',
-    gap: '14px',
-    fontSize: '0.98rem'
-  };
-
-  const highlightItemStyle = {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'flex-start',
-    background: 'rgba(59, 130, 246, 0.12)',
-    borderRadius: '14px',
-    padding: '14px 18px',
-    border: '1px solid rgba(59, 130, 246, 0.25)'
-  };
-
-  const statusCardStyle = {
-    background: 'rgba(15, 23, 42, 0.92)',
-    borderRadius: '24px',
-    padding: '42px 36px',
-    color: '#f8fafc',
-    boxShadow: '0 28px 70px rgba(15, 23, 42, 0.6)',
-    border: '1px solid rgba(148, 163, 184, 0.16)',
+    background: palette.pageBg,
+    padding: '0 24px 40px',
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     display: 'flex',
     flexDirection: 'column',
-    gap: '22px'
+    transition: 'background 0.3s ease',
   };
 
-  const statusHeaderStyle = {
-    fontSize: '1.2rem',
-    fontWeight: 600,
-    letterSpacing: '0.3px',
-    opacity: 0.85
+  const centerStyle = {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px 0',
   };
 
-  const messageStyle = {
-    fontSize: '2rem',
-    fontWeight: 700,
-    lineHeight: 1.3
+  const cardStyle = {
+    background: palette.cardBg,
+    border: `1px solid ${palette.cardBorder}`,
+    borderRadius: '20px',
+    padding: '48px 52px',
+    boxShadow: palette.cardShadow,
+    textAlign: 'center',
+    color: palette.textPrimary,
+    maxWidth: '580px',
   };
 
-  const statusStyle = {
-    fontSize: '1rem',
-    opacity: 0.85,
-    background: 'rgba(255, 255, 255, 0.08)',
-    padding: '12px 20px',
-    borderRadius: '18px',
+  const animatedTextStyle = {
+    fontSize: '4rem',
+    fontWeight: 800,
+    letterSpacing: '-1.2px',
+    background: 'linear-gradient(90deg, #22d3ee, #6366f1, #a855f7, #22d3ee)',
+    backgroundSize: '300% 300%',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    animation: 'gradientShift 8s linear infinite, floaty 3.2s ease-in-out infinite',
+    marginBottom: '12px',
+  };
+
+  const subTextStyle = {
+    marginTop: '12px',
+    color: palette.subText,
+    fontWeight: 500,
+  };
+
+  const badgeStyle = {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '10px'
-  };
-
-  const errorStyle = {
-    background: 'rgba(248, 113, 113, 0.2)',
-    color: '#fecaca',
-    border: '1px solid rgba(248, 113, 113, 0.4)',
-    padding: '16px 22px',
-    borderRadius: '14px',
-    fontSize: '1rem',
-    fontWeight: 500,
-    boxShadow: '0 22px 50px rgba(248, 113, 113, 0.22)'
-  };
-
-  const loadingStyle = {
-    fontSize: '1.1rem',
-    color: '#60a5fa',
-    fontWeight: 500,
-    letterSpacing: '0.6px'
+    gap: '8px',
+    fontSize: '0.9rem',
+    padding: '10px 16px',
+    borderRadius: '999px',
+    background: palette.badgeBg,
+    color: palette.badgeText,
+    marginTop: '20px',
   };
 
   return (
     <div style={containerStyle}>
-      <Navbarhome/>
-      <div style={mainLayoutStyle}>
-        <section style={heroStyle}>
-          <h1 style={titleStyle}>Skill growth meets powerful tracking</h1>
-          <p style={subtitleStyle}>
-            Connect your React learning experience directly with your Django backend. Track new goals,
-            log your sessions, and visualise your progress across platforms with real‑time insights.
-          </p>
-          <ul style={highlightListStyle}>
-            <li style={highlightItemStyle}>
-              <span style={{ fontWeight: 700, color: '#93c5fd' }}>01</span>
-              <span> Capture every learning goal, annotate resources, and keep your timeline up to date.</span>
-            </li>
-            <li style={highlightItemStyle}>
-              <span style={{ fontWeight: 700, color: '#93c5fd' }}>02</span>
-              <span> Import courses instantly by pasting links—metadata is grabbed automatically.</span>
-            </li>
-            <li style={highlightItemStyle}>
-              <span style={{ fontWeight: 700, color: '#93c5fd' }}>03</span>
-              <span> Generate a weekly summary to review logged hours and celebrate progress.</span>
-            </li>
-          </ul>
-        </section>
-
-        <aside style={statusCardStyle}>
-          <div style={statusHeaderStyle}>Current backend status</div>
-          {error && <div style={errorStyle}>Error: {error}</div>}
-          {apiData ? (
-            <>
-              <div style={messageStyle}>{apiData.message}</div>
-              <div style={statusStyle}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '999px', background: '#34d399' }} />
-                Status: {apiData.status}
-              </div>
-            </>
-          ) : (
-            <div style={loadingStyle}>Contacting Django API…</div>
-          )}
-        </aside>
+      <Navbarhome />
+      <style>
+        {`
+          @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          @keyframes floaty {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+          }
+        `}
+      </style>
+      <div style={centerStyle}>
+        <div style={cardStyle}>
+          <div style={animatedTextStyle}>SkillTrack</div>
+          <div style={subTextStyle}>A skill tracking platform — Best in the market</div>
+     {/*     <div style={badgeStyle}>
+            <span>{error ? 'API unreachable' : apiData?.status || 'Platform ready'}</span>
+            <span>{apiData?.message || 'Stay aligned with your goals'}</span>
+          </div> */}
+        </div>
       </div>
     </div>
   );
