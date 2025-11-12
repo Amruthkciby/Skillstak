@@ -108,6 +108,13 @@ class LearningActivitySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Hours value is unrealistically high.")
         return value
 
+    def validate_goal(self, value):
+        request = self.context.get("request")
+        if request and request.user and request.user.is_authenticated:
+            if value.owner_id != request.user.id:
+                raise serializers.ValidationError("You do not have permission to log activity for this goal.")
+        return value
+
     def get_goal_details(self, obj):
         goal = obj.goal
         return {

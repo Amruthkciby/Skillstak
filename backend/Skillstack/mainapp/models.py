@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -30,6 +31,13 @@ class LearningGoal(models.Model):
     hours_spent = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     difficulty_rating = models.PositiveSmallIntegerField(default=3)
     notes = models.TextField(blank=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="learning_goals",
+        blank=True,
+        null=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

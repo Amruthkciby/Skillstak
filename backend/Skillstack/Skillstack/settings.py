@@ -136,3 +136,13 @@ REST_FRAMEWORK = {
   ),
 }
 
+# Email configuration (Gmail SMTP using app password)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'amruthkcibyofficial@gmail.com'
+EMAIL_HOST_PASSWORD = 'fsmm quyr ajpl pmel'
+DEFAULT_FROM_EMAIL = 'Skillstack <amruthkcibyofficial@gmail.com>'
+EMAIL_TIMEOUT = 30
+
