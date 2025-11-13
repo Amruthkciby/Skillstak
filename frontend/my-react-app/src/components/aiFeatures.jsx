@@ -542,10 +542,10 @@ export default function AIFeatures() {
 				<div>
 					<div style={styles.card}>
 						<h3 style={{ margin: '0 0 16px 0', color: palette.textPrimary }}>
-							AI-Generated Learning Summaries
+							🤖 AI-Generated Learning Summaries
 						</h3>
 						<p style={{ color: palette.textSecondary, marginBottom: '16px' }}>
-							Get concise summaries of your learning notes and key takeaways to reinforce your knowledge.
+							Get concise summaries of your learning notes and key takeaways based on your skill context and activity notes.
 						</p>
 						<div style={{ marginBottom: '16px' }}>
 							<label style={{ display: 'block', marginBottom: '8px', color: palette.textSecondary, fontSize: '0.9rem' }}>
@@ -572,18 +572,114 @@ export default function AIFeatures() {
 							onMouseEnter={handlePrimaryHoverEnter}
 							onMouseLeave={handlePrimaryHoverLeave}
 						>
-							{loading ? 'Generating Summary...' : 'Generate Summary'}
+							{loading ? 'Generating Summary...' : '✨ Generate AI Summary'}
 						</button>
 					</div>
 
 					{summarizationData && (
 						<>
-							{/* Summary Overview */}
-							{summarizationData.summary && (
+							{/* Goal Context & Notes Analysis */}
+							{summarizationData.goal_notes && (
 								<div style={styles.card}>
-									<h4 style={{ margin: '0 0 16px 0', color: palette.textPrimary }}>
-										{summarizationData.summary.title}
+									<h4 style={{ margin: '0 0 16px 0', color: palette.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
+										📚 Goal Notes Analysis
 									</h4>
+									
+									{summarizationData.goal_notes.main_notes && (
+										<div style={{ marginBottom: '20px' }}>
+											<h5 style={{ margin: '0 0 10px 0', color: palette.textSecondary, fontSize: '0.9rem', fontWeight: 600 }}>
+												Main Notes
+											</h5>
+											<div style={{ padding: '12px', background: palette.inputBg, borderRadius: '8px', borderLeft: `3px solid ${palette.accent}`, marginBottom: '12px' }}>
+												<p style={{ margin: 0, color: palette.textPrimary, lineHeight: 1.6, fontSize: '0.9rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+													{summarizationData.goal_notes.main_notes}
+												</p>
+											</div>
+											{summarizationData.goal_notes.analysis && (
+												<div>
+													<div style={{ fontSize: '0.85rem', color: palette.textSecondary, marginBottom: '8px' }}>
+														<strong>Analysis:</strong> {summarizationData.goal_notes.analysis.content_length} content
+													</div>
+													{summarizationData.goal_notes.analysis.themes && summarizationData.goal_notes.analysis.themes.length > 0 && (
+														<div style={{ marginBottom: '8px' }}>
+															<div style={{ fontSize: '0.85rem', color: palette.textSecondary, marginBottom: '4px' }}>
+																<strong>Learning Themes:</strong>
+															</div>
+															<div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+																{summarizationData.goal_notes.analysis.themes.map((theme, idx) => (
+																	<span key={idx} style={styles.topicTag}>{theme}</span>
+																))}
+															</div>
+														</div>
+													)}
+													{summarizationData.goal_notes.analysis.key_phrases && summarizationData.goal_notes.analysis.key_phrases.length > 0 && (
+														<div>
+															<div style={{ fontSize: '0.85rem', color: palette.textSecondary, marginBottom: '4px' }}>
+																<strong>Key Concepts:</strong>
+															</div>
+															<div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+																{summarizationData.goal_notes.analysis.key_phrases.map((phrase, idx) => (
+																	<span key={idx} style={{ ...styles.topicTag, background: palette.accentSoft, borderColor: palette.accent }}>
+																		{phrase}
+																	</span>
+																))}
+															</div>
+														</div>
+													)}
+												</div>
+											)}
+										</div>
+									)}
+
+									{summarizationData.goal_notes.activity_entries && summarizationData.goal_notes.activity_entries.length > 0 && (
+										<div>
+											<h5 style={{ margin: '0 0 10px 0', color: palette.textSecondary, fontSize: '0.9rem', fontWeight: 600 }}>
+												Activity Notes ({summarizationData.goal_notes.activity_entries.length})
+											</h5>
+											<div style={{ maxHeight: '300px', overflowY: 'auto', borderLeft: `2px solid ${palette.accent}`, paddingLeft: '12px', marginLeft: '4px' }}>
+												{summarizationData.goal_notes.activity_entries.map((entry, idx) => (
+													<div key={idx} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: idx < summarizationData.goal_notes.activity_entries.length - 1 ? `1px solid ${palette.cardBorder}` : 'none' }}>
+														<div style={{ fontSize: '0.8rem', color: palette.accent, fontFamily: 'monospace', fontWeight: 600, marginBottom: '4px' }}>
+															{entry.timestamp}
+														</div>
+														<p style={{ margin: 0, color: palette.textPrimary, fontSize: '0.9rem', lineHeight: 1.5 }}>
+															{entry.text}
+														</p>
+													</div>
+												))}
+											</div>
+										</div>
+									)}
+								</div>
+							)}
+
+						{/* Summary Overview */}
+						{summarizationData.summary && (
+							<div style={styles.card}>
+								<h4 style={{ margin: '0 0 16px 0', color: palette.textPrimary }}>
+									📊 {summarizationData.summary.title}
+								</h4>
+
+								{/* Concise Summary */}
+								{summarizationData.summary.concise_summary && (
+									<div style={{
+										background: palette.accentSoft,
+										border: `1px solid ${palette.inputBorder}`,
+										borderRadius: '10px',
+										padding: '12px',
+										marginBottom: '16px',
+										fontSize: '0.95rem',
+										lineHeight: '1.6',
+										color: palette.textPrimary
+									}}>
+										<p style={{ margin: 0 }}>
+											<strong>📌 Summary:</strong> {summarizationData.summary.concise_summary}
+										</p>
+									</div>
+								)}
+
+								{/* Stats Grid - Only show if there are actual activities (hours > 0) */}
+								{summarizationData.summary.total_hours_spent > 0 && (
 									<div style={styles.analysisGrid}>
 										<div style={styles.analysisStat}>
 											<div style={styles.analysisStat_Label}>Total Hours</div>
@@ -603,52 +699,72 @@ export default function AIFeatures() {
 												{summarizationData.summary.average_hours_per_session}h
 											</div>
 										</div>
-									</div>
-
-									{summarizationData.summary.period && (
-										<div style={{ marginTop: '16px', padding: '12px', background: palette.accentSoft, borderRadius: '10px' }}>
-											<p style={{ margin: 0, fontSize: '0.9rem', color: palette.textSecondary }}>
-												<strong>Period:</strong> {summarizationData.summary.period.from} to {summarizationData.summary.period.to}
-											</p>
+										<div style={styles.analysisStat}>
+											<div style={styles.analysisStat_Label}>Learning Intensity</div>
+											<div style={styles.analysisStat_Value}>
+												{summarizationData.summary.learning_intensity}
+											</div>
 										</div>
-									)}
-								</div>
-							)}
-
-							{/* Main Topics */}
-							{summarizationData.topics_covered && summarizationData.topics_covered.length > 0 && (
-								<div style={styles.card}>
-									<h4 style={{ margin: '0 0 16px 0', color: palette.textPrimary }}>Main Topics Covered</h4>
-									<div>
-										{summarizationData.topics_covered.map((topic, idx) => (
-											<span key={idx} style={styles.topicTag}>{topic}</span>
-										))}
 									</div>
-								</div>
-							)}
+								)}
 
-							{/* Key Learnings */}
-							{summarizationData.key_points && summarizationData.key_points.length > 0 && (
-								<div style={styles.card}>
-									<h4 style={{ margin: '0 0 16px 0', color: palette.textPrimary }}>Key Learnings</h4>
-									<ul style={styles.keyPointsList}>
-										{summarizationData.key_points.slice(0, 8).map((point, idx) => (
-											<li key={idx} style={styles.keyPointItem}>
-												{point}
-											</li>
-										))}
-									</ul>
-								</div>
-							)}
+								{/* Learning Period - Only show if there are activities */}
+								{summarizationData.summary.period && summarizationData.summary.total_hours_spent > 0 && (
+									<div style={{ marginTop: '16px', padding: '12px', background: palette.accentSoft, borderRadius: '10px' }}>
+										<p style={{ margin: '0 0 6px 0', fontSize: '0.9rem', color: palette.textSecondary }}>
+											<strong>Learning Period:</strong> {summarizationData.summary.period.duration_days} days
+										</p>
+										{summarizationData.summary.period.earliest && (
+											<p style={{ margin: 0, fontSize: '0.85rem', color: palette.textSecondary }}>
+												From {summarizationData.summary.period.earliest.split('T')[0]} to {summarizationData.summary.period.latest.split('T')[0]}
+											</p>
+										)}
+									</div>
+								)}
+							</div>
+						)}
 
-							{/* Detailed Notes */}
-							{summarizationData.detailed_notes && summarizationData.detailed_notes.length > 0 && (
-								<div style={styles.card}>
-									<h4 style={{ margin: '0 0 16px 0', color: palette.textPrimary }}>Learning Timeline</h4>
+						{/* Main Topics - Only show if there are actual topics with meaningful data */}
+						{summarizationData.topics_covered && summarizationData.topics_covered.length > 0 && 
+							summarizationData.summary && summarizationData.summary.total_hours_spent > 0 && (
+							<div style={styles.card}>
+								<h4 style={{ margin: '0 0 16px 0', color: palette.textPrimary }}>🎯 Main Topics Covered</h4>
+								<div>
+									{summarizationData.topics_covered.map((topic, idx) => (
+										<span key={idx} style={styles.topicTag}>{topic}</span>
+									))}
+								</div>
+							</div>
+						)}
+
+						{/* Key Learnings - Only show if there are activities */}
+						{summarizationData.key_points && summarizationData.key_points.length > 0 && 
+							summarizationData.summary && summarizationData.summary.total_hours_spent > 0 && (
+							<div style={styles.card}>
+								<h4 style={{ margin: '0 0 16px 0', color: palette.textPrimary }}>💡 Key Learnings</h4>
+								<ul style={styles.keyPointsList}>
+									{summarizationData.key_points.slice(0, 8).map((point, idx) => (
+										<li key={idx} style={styles.keyPointItem}>
+											<strong>{point.skill}</strong> ({point.hours}h)
+											<br />
+											<span style={{ color: palette.textSecondary, fontSize: '0.85rem' }}>
+												{point.content}
+											</span>
+										</li>
+									))}
+								</ul>
+							</div>
+						)}
+
+						{/* Detailed Notes Timeline - Only show if there are activities */}
+						{summarizationData.detailed_notes && summarizationData.detailed_notes.length > 0 && 
+							summarizationData.summary && summarizationData.summary.total_hours_spent > 0 && (
+							<div style={styles.card}>
+								<h4 style={{ margin: '0 0 16px 0', color: palette.textPrimary }}>📅 Learning Timeline</h4>
 									{summarizationData.detailed_notes.map((note, idx) => (
 										<div key={idx} style={styles.summarySection}>
 											<p style={{ margin: '0 0 8px 0', fontSize: '0.85rem', color: palette.textSecondary }}>
-												<strong>{note.goal}</strong> • {note.date} • {note.hours}h
+												<strong>{note.goal}</strong> • {note.date.split('T')[0]} • {note.hours}h
 											</p>
 											<p style={{ margin: 0, fontSize: '0.9rem', color: palette.textPrimary }}>
 												{note.notes}

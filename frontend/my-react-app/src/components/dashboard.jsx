@@ -2318,7 +2318,9 @@ export default function Dashboard() {
 
 			{/* Goal Notes Modal */}
 			{viewingGoalNotes && (() => {
-				const { entries, mainNotes } = parseGoalNotes(viewingGoalNotes.notes)
+				// Get the current goal from the goals array to reflect any edits
+				const currentGoal = goals.find(g => g.id === viewingGoalNotes.id) || viewingGoalNotes
+				const { entries, mainNotes } = parseGoalNotes(currentGoal.notes)
 				const hasActivityNotes = entries.length > 0
 
 				return (

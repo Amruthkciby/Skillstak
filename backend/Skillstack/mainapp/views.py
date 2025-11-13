@@ -480,9 +480,144 @@ class ResourceRecommendationView(APIView):
 class NoteSummarizationView(APIView):
     """
     AI-powered endpoint that summarizes learning notes from activities
-    to create concise key takeaways and important points.
+    and goal notes to create concise key takeaways and important points.
     """
     permission_classes = [IsAuthenticated]
+
+    def _extract_main_and_activity_notes(self, goal_notes):
+        """
+        Parse goal notes to separate main notes from activity notes.
+        Activity notes follow pattern: [YYYY-MM-DD HH:MM] note_text
+        """
+        if not goal_notes or not goal_notes.strip():
+            return "", []
+        
+        import re
+        lines = goal_notes.split('\n')
+        main_notes = []
+        activity_entries = []
+        
+        timestamp_pattern = r'^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]'
+        
+        for line in lines:
+            if line.strip():
+                if re.match(timestamp_pattern, line.strip()):
+                    # Activity note with timestamp
+                    match = re.search(r'^\[([^\]]+)\]\s*(.*)', line.strip())
+                    if match:
+                        timestamp = match.group(1)
+                        note_text = match.group(2)
+                        activity_entries.append({
+                            "timestamp": timestamp,
+                            "text": note_text
+                        })
+                else:
+                    # Main note
+                    main_notes.append(line)
+        
+        main_notes_text = '\n'.join(main_notes).strip()
+        return main_notes_text, activity_entries
+
+    def _generate_concise_summary(self, text, skill_name=""):
+        """Generate a short, meaningful summary from notes (2-3 sentences max)."""
+        if not text or not text.strip():
+            return "No notes available for summarization."
+        
+        sentences = []
+        # Split by periods, exclamation marks, and question marks
+        import re
+        raw_sentences = re.split(r'[.!?]\s+', text.strip())
+        
+        # Clean and filter sentences
+        for sent in raw_sentences:
+            sent = sent.strip()
+            if sent and len(sent) > 10:  # Minimum sentence length
+                sentences.append(sent)
+        
+        if not sentences:
+            return text[:150] + "..." if len(text) > 150 else text
+        
+        # Strategy: Select 1-3 most informative sentences
+        # Prioritize sentences with action verbs and specific content
+        action_verbs = ['learned', 'completed', 'understood', 'mastered', 'implemented', 
+                       'fixed', 'solved', 'created', 'built', 'deployed', 'optimized',
+                       'discovered', 'integrated', 'configured', 'practiced', 'improved', 'enhanced']
+        
+        scored_sentences = []
+        for sent in sentences:
+            score = 0
+            sent_lower = sent.lower()
+            
+            # Boost score if contains action verbs
+            for verb in action_verbs:
+                if verb in sent_lower:
+                    score += 2
+            
+            # Boost score for sentences with specific terms or numbers
+            if any(char.isdigit() for char in sent):
+                score += 1
+            
+            # Boost score for longer sentences (more content)
+            score += len(sent.split()) / 10
+            
+            scored_sentences.append((score, sent))
+        
+        # Sort by score and take top 2-3 sentences
+        sorted_sentences = sorted(scored_sentences, key=lambda x: x[0], reverse=True)
+        
+        # Take top sentences (max 3, minimum 1)
+        num_sentences = min(3, max(1, len(sentences) // 4 + 1))
+        top_sentences = sorted_sentences[:num_sentences]
+        
+        # Sort by original order
+        top_sentences_ordered = sorted(
+            top_sentences, 
+            key=lambda x: sentences.index(x[1])
+        )
+        
+        # Join and create summary
+        summary = ". ".join([sent[1] for sent in top_sentences_ordered])
+        if not summary.endswith(('.', '!', '?')):
+            summary += "."
+        
+        return summary
+
+    def _analyze_text_content(self, text):
+        """Extract themes, concepts, and learning points from text."""
+        if not text or not text.strip():
+            return {"themes": [], "concepts": [], "sentiment": "neutral"}
+        
+        text_lower = text.lower()
+        
+        # Learning concepts based on keywords
+        concepts = []
+        concept_keywords = {
+            "fundamentals": ["basic", "foundation", "concept", "theory", "principle"],
+            "practical": ["implement", "build", "create", "code", "practice", "exercise"],
+            "problem-solving": ["fix", "debug", "solve", "issue", "error", "bug"],
+            "optimization": ["optimize", "improve", "enhance", "performance", "efficiency"],
+            "integration": ["integrate", "connect", "link", "API", "database", "external"],
+            "testing": ["test", "unit", "integration", "validation", "verify"],
+            "deployment": ["deploy", "production", "release", "live", "production"],
+        }
+        
+        for concept, keywords in concept_keywords.items():
+            if any(kw in text_lower for kw in keywords):
+                concepts.append(concept)
+        
+        # Extract important phrases (capitalized or quoted)
+        important_phrases = []
+        words = text.split()
+        for i, word in enumerate(words):
+            if len(word) > 3 and word[0].isupper():
+                important_phrases.append(word.rstrip('.,!?;:'))
+        
+        return {
+            "themes": concepts[:5],
+            "key_phrases": list(set(important_phrases))[:5],
+            "word_count": len(text.split()),
+            "content_length": "comprehensive" if len(text.split()) > 100 else "moderate" if len(text.split()) > 30 else "brief"
+        }
 
     def post(self, request):
         user = request.user
@@ -501,11 +636,11 @@ class NoteSummarizationView(APIView):
             activities = LearningActivity.objects.filter(goal__owner=user).order_by('-performed_on')
             goal = None
         
-        if not activities.exists():
+        if not activities.exists() and (not goal or not goal.notes):
             return Response(
                 {
                     "success": False,
-                    "message": "No learning activities found. Log some activities to get summaries!",
+                    "message": "No learning activities or notes found. Start logging activities and adding notes!",
                     "summary": {},
                     "key_points": []
                 },
@@ -530,28 +665,81 @@ class NoteSummarizationView(APIView):
                     "goal_id": activity.goal.id
                 })
             
+            # Keep as date objects for comparison
             if not date_range["latest"] or activity.performed_on > date_range["latest"]:
-                date_range["latest"] = activity.performed_on.isoformat()
+                date_range["latest"] = activity.performed_on
             if not date_range["earliest"] or activity.performed_on < date_range["earliest"]:
-                date_range["earliest"] = activity.performed_on.isoformat()
+                date_range["earliest"] = activity.performed_on
         
-        # Calculate duration
+        # Calculate duration and convert to ISO format for response
         if date_range["earliest"] and date_range["latest"]:
-            from datetime import datetime
-            start = datetime.fromisoformat(date_range["earliest"])
-            end = datetime.fromisoformat(date_range["latest"])
-            date_range["duration_days"] = (end - start).days
+            date_range["duration_days"] = (date_range["latest"] - date_range["earliest"]).days
+            # Convert to ISO format for API response
+            date_range["earliest"] = date_range["earliest"].isoformat()
+            date_range["latest"] = date_range["latest"].isoformat()
+        else:
+            # Ensure ISO format if they're still None
+            date_range["earliest"] = None
+            date_range["latest"] = None
         
-        # Create summary based on keywords and patterns
+        # Parse goal notes if available
+        goal_main_notes = ""
+        goal_activity_entries = []
+        goal_notes_analysis = None
+        combined_notes_text = ""
+        
+        if goal and goal.notes:
+            goal_main_notes, goal_activity_entries = self._extract_main_and_activity_notes(goal.notes)
+            # Combine main notes with all activity entries for comprehensive analysis
+            combined_parts = [goal_main_notes]
+            for entry in goal_activity_entries:
+                combined_parts.append(entry["text"])
+            combined_notes_text = " ".join(combined_parts)
+            # Analyze the combined text
+            goal_notes_analysis = self._analyze_text_content(combined_notes_text)
+        
+        # Also combine with activity notes from database for topic extraction
+        all_activity_notes_text = " ".join([a["notes"] for a in all_notes])
+        combined_all_text = f"{combined_notes_text} {all_activity_notes_text}"
+        
+        # Create summary based on keywords and patterns from BOTH goal notes and activity notes
         key_points = []
         topics_mentioned = {}
         total_hours = sum(a["hours"] for a in all_notes) if all_notes else 0
         
-        # Extract key points from notes with improved logic
+        # Combine all text sources for comprehensive analysis
+        all_text_sources = []
+        
+        # Add goal main notes and activity entries
+        if goal_main_notes:
+            all_text_sources.append(goal_main_notes)
+        for entry in goal_activity_entries:
+            all_text_sources.append(entry["text"])
+        # Add all activity notes from database
+        for note_item in all_notes:
+            all_text_sources.append(note_item["notes"])
+        
+        combined_text = " ".join(all_text_sources)
+        
+        # Extract key points from ALL sources with improved logic
         action_keywords = ['learned', 'completed', 'understood', 'mastered', 'implemented', 
                           'fixed', 'solved', 'created', 'built', 'deployed', 'optimized',
-                          'discovered', 'implemented', 'integrated', 'configured']
+                          'discovered', 'integrated', 'configured', 'practiced', 'improved', 'enhanced']
         
+        # Extract from goal notes entries
+        for entry in goal_activity_entries:
+            entry_text = entry["text"].lower()
+            for keyword in action_keywords:
+                if keyword in entry_text:
+                    key_points.append({
+                        "date": entry["timestamp"],
+                        "content": entry["text"][:150],
+                        "hours": 0,
+                        "skill": "Goal Context"
+                    })
+                    break
+        
+        # Extract from activity notes
         for note_item in all_notes:
             notes_text = note_item["notes"].lower()
             
@@ -561,26 +749,34 @@ class NoteSummarizationView(APIView):
                     # Add complete sentence or note
                     key_points.append({
                         "date": note_item["date"],
-                        "content": note_item["notes"][:120],
+                        "content": note_item["notes"][:150],
                         "hours": note_item["hours"],
                         "skill": note_item["goal"]
                     })
                     break
             
-            # Topic extraction - better word filtering
+            # Topic extraction from activity notes
             words = note_item['notes'].split()
             for word in words:
                 # Filter meaningful words (length > 4, skip common words)
-                if len(word) > 4 and word.lower() not in ['this', 'that', 'with', 'from', 'into', 'have']:
+                if len(word) > 4 and word.lower() not in ['this', 'that', 'with', 'from', 'into', 'have', 'about', 'where', 'which']:
                     clean_word = word.strip('.,!?;:').lower()
                     if clean_word and len(clean_word) > 3:
                         topics_mentioned[clean_word] = topics_mentioned.get(clean_word, 0) + 1
+        
+        # Also extract topics from goal notes and activity entries
+        words_from_combined = combined_text.split()
+        for word in words_from_combined:
+            if len(word) > 4 and word.lower() not in ['this', 'that', 'with', 'from', 'into', 'have', 'about', 'where', 'which', 'there', 'would', 'could', 'should', 'been', 'more']:
+                clean_word = word.strip('.,!?;:').lower()
+                if clean_word and len(clean_word) > 3 and not clean_word.endswith('ing'):
+                    topics_mentioned[clean_word] = topics_mentioned.get(clean_word, 0) + 1
         
         # Get top topics
         top_topics = sorted(topics_mentioned.items(), key=lambda x: x[1], reverse=True)[:6]
         topics = [t[0] for t in top_topics]
         
-        # Skill-specific summaries
+        # Skill-specific summaries with comprehensive note analysis
         skill_summaries = {}
         for activity in activities:
             goal_name = activity.goal.skill_name
@@ -590,12 +786,28 @@ class NoteSummarizationView(APIView):
                     "sessions": 0,
                     "key_notes": [],
                     "goal_id": activity.goal.id,
-                    "status": activity.goal.status
+                    "status": activity.goal.status,
+                    "main_notes": "",
+                    "notes_analysis": None
                 }
             skill_summaries[goal_name]["total_hours"] += float(activity.hours_spent)
             skill_summaries[goal_name]["sessions"] += 1
             if activity.notes:
                 skill_summaries[goal_name]["key_notes"].append(activity.notes[:80])
+            
+            # Add comprehensive notes analysis for this goal
+            if activity.goal.notes:
+                goal_main, goal_activities = self._extract_main_and_activity_notes(activity.goal.notes)
+                # Combine main notes with activity entries
+                all_goal_notes_parts = [goal_main]
+                for gentry in goal_activities:
+                    all_goal_notes_parts.append(gentry["text"])
+                combined_goal_text = " ".join(all_goal_notes_parts)
+                
+                if goal_main:
+                    skill_summaries[goal_name]["main_notes"] = goal_main[:200]
+                # Analyze combined notes
+                skill_summaries[goal_name]["notes_analysis"] = self._analyze_text_content(combined_goal_text)
         
         # Generate meaningful summary text
         summary_text = ""
@@ -607,8 +819,13 @@ class NoteSummarizationView(APIView):
                 top_skill = max(skill_summaries.items(), key=lambda x: x[1]["total_hours"])[0]
                 summary_text += f" (Focus: {top_skill})"
         
-        summary = {
+        # Generate concise summary from combined notes
+        concise_summary = self._generate_concise_summary(combined_text, goal.skill_name if goal else "Learning")
+        
+        # Create AI-powered summary combining all sources
+        ai_summary = {
             "title": summary_text,
+            "concise_summary": concise_summary,  # Add short 2-3 sentence summary
             "period": date_range,
             "total_hours_spent": round(total_hours, 2),
             "total_sessions": len(all_notes),
@@ -616,20 +833,30 @@ class NoteSummarizationView(APIView):
             "main_topics": topics,
             "key_learnings": key_points[:8],
             "by_skill": skill_summaries if not goal else None,
-            "learning_intensity": "high" if total_hours > 20 else "medium" if total_hours > 10 else "low"
+            "learning_intensity": "high" if total_hours > 20 else "medium" if total_hours > 10 else "low",
+            "goal_context": {
+                "has_main_notes": bool(goal_main_notes),
+                "main_notes_preview": goal_main_notes[:200] if goal_main_notes else None,
+                "notes_analysis": goal_notes_analysis
+            } if goal else None
         }
         
-        logger.info("Generated summary for user %s with %d activities", user.id, len(all_notes))
+        logger.info("Generated comprehensive summary for user %s with %d activities", user.id, len(all_notes))
         
         return Response(
             {
                 "success": True,
-                "summary": summary,
+                "summary": ai_summary,
                 "key_points": key_points[:12],
                 "topics_covered": topics,
                 "detailed_notes": all_notes[:25],
                 "notes_count": len(all_notes),
-                "words_analyzed": sum(len(note["notes"].split()) for note in all_notes)
+                "words_analyzed": sum(len(note["notes"].split()) for note in all_notes),
+                "goal_notes": {
+                    "main_notes": goal_main_notes,
+                    "activity_entries": goal_activity_entries,
+                    "analysis": goal_notes_analysis
+                } if goal else None
             },
             status=status.HTTP_200_OK
         )
