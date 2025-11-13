@@ -5,6 +5,7 @@ import Register from "./components/register";
 import Login from "./components/login";
 import PrivateRoute from "./components/Privateroute";
 import Dashboard from "./components/dashboard";
+import AIFeatures from "./components/aiFeatures";
 
 export default function App() {
   return (
@@ -21,6 +22,16 @@ export default function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            } 
+          />
+
+          {/* AI Features Route */}
+          <Route 
+            path="/ai-features" 
+            element={
+              <PrivateRoute>
+                <AIFeatures />
               </PrivateRoute>
             } 
           />

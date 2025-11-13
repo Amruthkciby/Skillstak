@@ -6,8 +6,10 @@ from .views import (
     CourseImportView,
     LearningActivityViewSet,
     LearningGoalViewSet,
+    NoteSummarizationView,
     ProfileView,
     RegisterView,
+    ResourceRecommendationView,
     WeeklySummaryView,
     hello_api,
 )
@@ -24,5 +26,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('course-import/', CourseImportView.as_view(), name='course_import'),
     path('learning-summary/send-weekly/', WeeklySummaryView.as_view(), name='weekly_summary'),
+    path('ai/resource-recommendations/', ResourceRecommendationView.as_view(), name='resource_recommendations'),
+    path('ai/note-summarization/', NoteSummarizationView.as_view(), name='note_summarization'),
     path('', include(router.urls)),
 ]

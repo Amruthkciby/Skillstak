@@ -39,6 +39,24 @@ export default function Home() {
     display: 'flex',
     flexDirection: 'column',
     transition: 'background 0.3s ease',
+    position: 'relative',
+    overflow: 'hidden',
+  };
+
+  const backgroundPatternStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: isDark ? 0.1 : 0.15,
+    zIndex: 0,
+    pointerEvents: 'none',
+  };
+
+  const contentWrapperStyle = {
+    position: 'relative',
+    zIndex: 1,
   };
 
   const centerStyle = {
@@ -92,6 +110,33 @@ export default function Home() {
 
   return (
     <div style={containerStyle}>
+      <svg style={backgroundPatternStyle} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="skillGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={isDark ? '#2563eb' : '#0ea5e9'} />
+            <stop offset="50%" stopColor={isDark ? '#7c3aed' : '#6366f1'} />
+            <stop offset="100%" stopColor={isDark ? '#ec4899' : '#a855f7'} />
+          </linearGradient>
+        </defs>
+        <rect x="50" y="100" width="180" height="8" fill="url(#skillGradient)" opacity="0.6" rx="4" />
+        <rect x="80" y="140" width="150" height="8" fill="url(#skillGradient)" opacity="0.5" rx="4" />
+        <rect x="60" y="180" width="170" height="8" fill="url(#skillGradient)" opacity="0.4" rx="4" />
+        <circle cx="950" cy="150" r="35" fill="none" stroke="url(#skillGradient)" strokeWidth="2" opacity="0.6" />
+        <circle cx="950" cy="150" r="25" fill="none" stroke="url(#skillGradient)" strokeWidth="1.5" opacity="0.4" />
+        <circle cx="1050" cy="250" r="40" fill="none" stroke="url(#skillGradient)" strokeWidth="2" opacity="0.5" />
+        <g opacity="0.5">
+          <line x1="300" y1="500" x2="350" y2="450" stroke="url(#skillGradient)" strokeWidth="3" strokeLinecap="round" />
+          <polygon points="350,450 345,460 360,455" fill="url(#skillGradient)" />
+        </g>
+        <circle cx="200" cy="650" r="20" fill="url(#skillGradient)" opacity="0.6" />
+        <circle cx="280" cy="680" r="18" fill="url(#skillGradient)" opacity="0.5" />
+        <circle cx="150" cy="730" r="16" fill="url(#skillGradient)" opacity="0.4" />
+        <rect x="700" y="600" width="12" height="12" fill="url(#skillGradient)" opacity="0.6" rx="2" />
+        <rect x="780" y="580" width="12" height="12" fill="url(#skillGradient)" opacity="0.5" rx="2" />
+        <rect x="850" y="620" width="12" height="12" fill="url(#skillGradient)" opacity="0.4" rx="2" />
+        <line x1="712" y1="606" x2="786" y2="586" stroke="url(#skillGradient)" strokeWidth="1.5" opacity="0.3" />
+        <line x1="792" y1="586" x2="856" y2="626" stroke="url(#skillGradient)" strokeWidth="1.5" opacity="0.3" />
+      </svg>
       <Navbarhome />
       <style>
         {`
@@ -107,7 +152,7 @@ export default function Home() {
           }
         `}
       </style>
-      <div style={centerStyle}>
+      <div style={{...centerStyle, ...contentWrapperStyle}}>
         <div style={cardStyle}>
           <div style={animatedTextStyle}>SkillTrack</div>
           <div style={subTextStyle}>A skill tracking platform — Best in the market</div>

@@ -144,6 +144,36 @@ function formatDecimalHours(value) {
 	return `${Math.round(num * 10) / 10}h`
 }
 
+function parseGoalNotes(notesText) {
+	/**
+	 * Parse goal notes into activity entries with timestamps and main notes
+	 * Format: [YYYY-MM-DD HH:MM] note text
+	 */
+	if (!notesText || !notesText.trim()) {
+		return { entries: [], mainNotes: '' }
+	}
+
+	const lines = notesText.split('\n\n').map(s => s.trim()).filter(Boolean)
+	const entries = []
+	const mainNotes = []
+
+	lines.forEach(line => {
+		const match = line.match(/^\[(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2})\]\s*(.*)$/)
+		if (match) {
+			const timestamp = match[1]
+			const text = match[2]
+			entries.push({ timestamp, text, isUpdate: text.includes('(updated)') })
+		} else {
+			mainNotes.push(line)
+		}
+	})
+
+	return {
+		entries: entries.sort((a, b) => new Date(`${b.timestamp}`) - new Date(`${a.timestamp}`)),
+		mainNotes: mainNotes.join('\n')
+	}
+}
+
 export default function Dashboard() {
 	// ---------------------------- State & Model ----------------------------
 	const navigate = useNavigate()
@@ -236,6 +266,7 @@ export default function Dashboard() {
 		courseImport: false,
 		weeklySummary: false
 	})
+	const [viewingGoalNotes, setViewingGoalNotes] = useState(null)
 	const menuRef = useRef(null)
 	const weeklySummaryRef = useRef(null)
 	const courseImportRef = useRef(null)
@@ -1158,7 +1189,6 @@ export default function Dashboard() {
 								event.currentTarget.style.transform = 'scale(1)'
 							}}
 						>
-							<div style={styles.avatarCircle}>{initials}</div>
 							<div style={styles.userDetails}>
 								<span style={styles.userName}>{displayName}</span>
 							</div>
@@ -1609,18 +1639,26 @@ export default function Dashboard() {
 										/>
 									</td>
 									<td style={styles.cell}>
-										<input
-											style={{ ...styles.input, width: '100%' }}
-											type="text"
-											value={goal.notes}
-											onChange={e => updateGoalField(goal.id, 'notes', e.target.value)}
-											onBlur={event => {
-												handleFieldBlur(event)
-												void persistGoal(goal.id)
+										<button
+											type="button"
+											style={{
+												...styles.button,
+												width: '100%',
+												padding: '8px 12px',
+												fontSize: '0.85rem',
+												height: 'auto',
+												background: goal.notes ? palette.accentSoft : palette.inputBg,
+												border: `1px solid ${goal.notes ? palette.accent : palette.inputBorder}`,
+												color: palette.textPrimary,
+												cursor: 'pointer',
+												borderRadius: '8px',
+												transition: 'all 0.2s ease'
 											}}
-											onFocus={handleFieldFocus}
-											placeholder="Notes..."
-										/>
+											onClick={() => setViewingGoalNotes(goal)}
+											title={goal.notes ? 'View and edit notes' : 'Add notes'}
+										>
+											{goal.notes ? '📝 View Notes' : '+ Add Notes'}
+										</button>
 									</td>
 									<td style={{ ...styles.cellLast, textAlign: 'right' }}>
 										<button
@@ -1637,6 +1675,122 @@ export default function Dashboard() {
 						</tbody>
 					</table>
 				)}
+			</section>
+
+			{/* AI-Powered Learning Features Section */}
+			<section style={{ ...styles.card, marginBottom: '24px' }}>
+				<h4 style={{ 
+					marginTop: 0, 
+					marginBottom: '16px',
+					display: 'flex',
+					alignItems: 'center',
+					gap: '8px'
+				}}>
+					<span style={{ fontSize: '1.2rem' }}>🤖</span>
+					AI-Powered Learning Tools
+				</h4>
+				<p style={{ color: palette.textSecondary, marginBottom: '16px' }}>
+					Leverage artificial intelligence to get personalized recommendations and intelligent summaries based on your learning journey.
+				</p>
+				<div style={{
+					display: 'grid',
+					gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+					gap: '16px'
+				}}>
+					{/* Resource Recommendations Button */}
+					<div style={{
+						...styles.card,
+						padding: '20px',
+						display: 'flex',
+						flexDirection: 'column',
+						gap: '12px',
+						cursor: 'pointer',
+						transition: 'all 0.3s ease',
+						border: `1px solid ${palette.cardBorder}`,
+						background: isDark ? 'rgba(99, 102, 241, 0.08)' : 'rgba(37, 99, 235, 0.05)'
+					}}
+					onMouseEnter={e => {
+						e.currentTarget.style.transform = 'translateY(-4px)'
+						e.currentTarget.style.boxShadow = palette.cardShadow
+						e.currentTarget.style.borderColor = palette.accent
+					}}
+					onMouseLeave={e => {
+						e.currentTarget.style.transform = 'translateY(0)'
+						e.currentTarget.style.boxShadow = 'none'
+						e.currentTarget.style.borderColor = palette.cardBorder
+					}}
+					>
+						<h5 style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px', color: palette.textPrimary, fontSize: '1rem' }}>
+							<span style={{ fontSize: '1.6rem' }}>📚</span>
+							Smart Resource Recommendations
+						</h5>
+						<p style={{ margin: 0, fontSize: '0.9rem', color: palette.textSecondary, lineHeight: '1.5' }}>
+							Get AI-powered suggestions for learning resources based on your past activities, skill level, difficulty progression, and platform preferences.
+						</p>
+						<button
+							type="button"
+							style={{
+								...styles.button,
+								marginTop: '12px',
+								alignSelf: 'flex-start',
+								fontSize: '0.9rem',
+								padding: '10px 16px'
+							}}
+							onClick={() => navigate('/ai-features?tab=recommendations')}
+							onMouseEnter={handlePrimaryHoverEnter}
+							onMouseLeave={handlePrimaryHoverLeave}
+						>
+							Generate Recommendations →
+						</button>
+					</div>
+
+					{/* Note Summarization Button */}
+					<div style={{
+						...styles.card,
+						padding: '20px',
+						display: 'flex',
+						flexDirection: 'column',
+						gap: '12px',
+						cursor: 'pointer',
+						transition: 'all 0.3s ease',
+						border: `1px solid ${palette.cardBorder}`,
+						background: isDark ? 'rgba(168, 85, 247, 0.08)' : 'rgba(168, 85, 247, 0.05)'
+					}}
+					onMouseEnter={e => {
+						e.currentTarget.style.transform = 'translateY(-4px)'
+						e.currentTarget.style.boxShadow = palette.cardShadow
+						e.currentTarget.style.borderColor = palette.accent
+					}}
+					onMouseLeave={e => {
+						e.currentTarget.style.transform = 'translateY(0)'
+						e.currentTarget.style.boxShadow = 'none'
+						e.currentTarget.style.borderColor = palette.cardBorder
+					}}
+					>
+						<h5 style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px', color: palette.textPrimary, fontSize: '1rem' }}>
+							<span style={{ fontSize: '1.6rem' }}>📝</span>
+							Intelligent Note Summarization
+						</h5>
+						<p style={{ margin: 0, fontSize: '0.9rem', color: palette.textSecondary, lineHeight: '1.5' }}>
+							Automatically generate concise summaries and extract key takeaways from your learning notes to reinforce knowledge and identify gaps.
+						</p>
+						<button
+							type="button"
+							style={{
+								...styles.button,
+								marginTop: '12px',
+								alignSelf: 'flex-start',
+								fontSize: '0.9rem',
+								padding: '10px 16px'
+							}}
+							onClick={() => navigate('/ai-features?tab=summarization')}
+							onMouseEnter={handlePrimaryHoverEnter}
+							onMouseLeave={handlePrimaryHoverLeave}
+						>
+							Summarize Notes →
+						</button>
+					</div>
+				</div>
 			</section>
 
 			{/* Main Content Grid - Two Column Layout */}
@@ -2161,6 +2315,202 @@ export default function Dashboard() {
 						)}
 					</div>
 				</section>
+
+			{/* Goal Notes Modal */}
+			{viewingGoalNotes && (() => {
+				const { entries, mainNotes } = parseGoalNotes(viewingGoalNotes.notes)
+				const hasActivityNotes = entries.length > 0
+
+				return (
+					<div style={{
+						position: 'fixed',
+						top: 0,
+						left: 0,
+						right: 0,
+						bottom: 0,
+						background: 'rgba(0, 0, 0, 0.5)',
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+						zIndex: 1000,
+						backdropFilter: 'blur(4px)'
+					}}>
+						<div style={{
+							background: palette.cardBg,
+							border: `1px solid ${palette.cardBorder}`,
+							borderRadius: '16px',
+							padding: '32px',
+							maxWidth: '600px',
+							width: '90%',
+							maxHeight: '80vh',
+							overflowY: 'auto',
+							boxShadow: palette.cardShadow
+						}}>
+							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+								<h3 style={{ margin: 0, fontSize: '1.3rem' }}>
+									📝 {viewingGoalNotes.skillName} Notes
+								</h3>
+								<button
+									type="button"
+									style={{
+										background: 'transparent',
+										border: 'none',
+										fontSize: '1.5rem',
+										cursor: 'pointer',
+										color: palette.textSecondary,
+										padding: '0',
+										width: '32px',
+										height: '32px',
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center'
+									}}
+									onClick={() => setViewingGoalNotes(null)}
+								>
+									✕
+								</button>
+							</div>
+
+							{/* Main Notes Section */}
+							<div style={{ marginBottom: '24px' }}>
+								<label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '8px', color: palette.textSecondary }}>
+									Main Notes
+								</label>
+								<textarea
+									style={{
+										...styles.textarea,
+										width: '100%',
+										minHeight: '100px',
+										fontFamily: "'Segoe UI', sans-serif",
+										fontSize: '0.95rem'
+									}}
+									value={mainNotes}
+									onChange={e => {
+										const newNotes = hasActivityNotes
+											? `${e.target.value}\n\n${entries.map(entry => `[${entry.timestamp}] ${entry.text}`).join('\n\n')}`
+											: e.target.value
+										updateGoalField(viewingGoalNotes.id, 'notes', newNotes)
+									}}
+									onBlur={() => void persistGoal(viewingGoalNotes.id)}
+									placeholder="Write your main notes here..."
+								/>
+								<p style={{ fontSize: '0.8rem', color: palette.textSecondary, marginTop: '4px', margin: 0 }}>
+									These are your personal notes. Activity notes are automatically added below.
+								</p>
+							</div>
+
+							{/* Activity Notes Timeline */}
+							{hasActivityNotes && (
+								<div>
+									<h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '12px', color: palette.textSecondary, margin: '0 0 12px' }}>
+										Activity Notes ({entries.length})
+									</h4>
+									<div style={{
+										background: palette.inputBg,
+										border: `1px solid ${palette.inputBorder}`,
+										borderRadius: '12px',
+										padding: '12px',
+										maxHeight: '300px',
+										overflowY: 'auto'
+									}}>
+										{entries.map((entry, idx) => (
+											<div key={idx} style={{
+												paddingBottom: '12px',
+												marginBottom: '12px',
+												borderBottom: idx < entries.length - 1 ? `1px solid ${palette.cardBorder}` : 'none',
+												fontSize: '0.9rem'
+											}}>
+												<div style={{
+													display: 'flex',
+													justifyContent: 'space-between',
+													alignItems: 'flex-start',
+													marginBottom: '4px'
+												}}>
+													<span style={{
+														fontWeight: 600,
+														color: palette.accent,
+														fontFamily: 'monospace',
+														fontSize: '0.85rem'
+													}}>
+														{entry.timestamp}
+													</span>
+													{entry.isUpdate && (
+														<span style={{
+															background: palette.warningBg,
+															color: palette.alertText,
+															padding: '2px 6px',
+															borderRadius: '4px',
+															fontSize: '0.75rem',
+															fontWeight: 600
+														}}>
+															Updated
+														</span>
+													)}
+												</div>
+												<p style={{
+													margin: 0,
+													color: palette.textPrimary,
+													lineHeight: 1.5,
+													wordBreak: 'break-word'
+												}}>
+													{entry.text.replace('(updated)', '').trim()}
+												</p>
+											</div>
+										))}
+									</div>
+									<p style={{
+										fontSize: '0.8rem',
+										color: palette.textSecondary,
+										marginTop: '8px',
+										margin: '8px 0 0'
+									}}>
+										Notes are automatically added when you log learning activities.
+									</p>
+								</div>
+							)}
+
+							{/* Action Buttons */}
+							<div style={{
+								display: 'flex',
+								gap: '10px',
+								marginTop: '20px',
+								justifyContent: 'flex-end'
+							}}>
+								<button
+									type="button"
+									style={{
+										...styles.button,
+										background: palette.inputBg,
+										border: `1px solid ${palette.inputBorder}`,
+										color: palette.textPrimary
+									}}
+									onClick={() => setViewingGoalNotes(null)}
+									onMouseEnter={e => {
+										e.currentTarget.style.background = palette.accentSoft
+									}}
+									onMouseLeave={e => {
+										e.currentTarget.style.background = palette.inputBg
+									}}
+								>
+									Close
+								</button>
+								<button
+									type="button"
+									style={styles.button}
+									onMouseEnter={handlePrimaryHoverEnter}
+									onMouseLeave={handlePrimaryHoverLeave}
+									onClick={() => {
+										void persistGoal(viewingGoalNotes.id)
+										setViewingGoalNotes(null)
+									}}
+								>
+									Save & Close
+								</button>
+							</div>
+						</div>
+					</div>
+				)
+			})()}
 
     </div>
   )

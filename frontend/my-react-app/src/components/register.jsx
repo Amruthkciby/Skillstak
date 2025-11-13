@@ -79,6 +79,19 @@ export default function Register() {
     display: 'flex',
     flexDirection: 'column',
     transition: 'background 0.3s ease',
+    position: 'relative',
+    overflow: 'hidden',
+  };
+
+  const backgroundPatternStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: isDark ? 0.08 : 0.12,
+    zIndex: 0,
+    pointerEvents: 'none',
   };
 
   const contentWrapperStyle = {
@@ -87,6 +100,8 @@ export default function Register() {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '60px 24px',
+    position: 'relative',
+    zIndex: 1,
   };
 
   const cardStyle = {
@@ -189,6 +204,35 @@ export default function Register() {
 
   return (
     <div style={containerStyle}>
+      <svg style={backgroundPatternStyle} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="registerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={isDark ? '#0ea5e9' : '#22d3ee'} />
+            <stop offset="50%" stopColor={isDark ? '#6366f1' : '#6366f1'} />
+            <stop offset="100%" stopColor={isDark ? '#a855f7' : '#a855f7'} />
+          </linearGradient>
+        </defs>
+        <path d="M 100 400 Q 300 350 500 400 T 900 400" stroke="url(#registerGradient)" strokeWidth="2" fill="none" opacity="0.4" />
+        <circle cx="100" cy="400" r="12" fill="url(#registerGradient)" opacity="0.6" />
+        <circle cx="300" cy="350" r="12" fill="url(#registerGradient)" opacity="0.5" />
+        <circle cx="500" cy="400" r="12" fill="url(#registerGradient)" opacity="0.5" />
+        <circle cx="700" cy="380" r="12" fill="url(#registerGradient)" opacity="0.4" />
+        <circle cx="900" cy="400" r="12" fill="url(#registerGradient)" opacity="0.35" />
+        <g opacity="0.5">
+          <rect x="150" y="600" width="30" height="80" fill="url(#registerGradient)" rx="4" />
+          <rect x="200" y="550" width="30" height="130" fill="url(#registerGradient)" rx="4" />
+          <rect x="250" y="500" width="30" height="180" fill="url(#registerGradient)" rx="4" />
+        </g>
+        <g opacity="0.4">
+          <circle cx="1000" cy="150" r="15" fill="none" stroke="url(#registerGradient)" strokeWidth="2" />
+          <circle cx="1050" cy="200" r="15" fill="none" stroke="url(#registerGradient)" strokeWidth="2" />
+          <circle cx="1080" cy="260" r="15" fill="none" stroke="url(#registerGradient)" strokeWidth="2" />
+          <line x1="1000" y1="165" x2="1050" y2="200" stroke="url(#registerGradient)" strokeWidth="1.5" />
+          <line x1="1050" y1="215" x2="1080" y2="260" stroke="url(#registerGradient)" strokeWidth="1.5" />
+        </g>
+        <rect x="80" y="150" width="40" height="40" fill="url(#registerGradient)" rx="8" opacity="0.5" />
+        <rect x="140" y="180" width="35" height="35" fill="url(#registerGradient)" rx="6" opacity="0.4" />
+      </svg>
       <Navbarhome />
       <div style={contentWrapperStyle}>
         <div style={cardStyle}>

@@ -72,6 +72,19 @@ export default function Login() {
     display: 'flex',
     flexDirection: 'column',
     transition: 'background 0.3s ease',
+    position: 'relative',
+    overflow: 'hidden',
+  };
+
+  const backgroundPatternStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: isDark ? 0.08 : 0.12,
+    zIndex: 0,
+    pointerEvents: 'none',
   };
 
   const contentWrapperStyle = {
@@ -80,6 +93,8 @@ export default function Login() {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '60px 24px',
+    position: 'relative',
+    zIndex: 1,
   };
 
   const cardStyle = {
@@ -171,6 +186,39 @@ export default function Login() {
 
   return (
     <div style={containerStyle}>
+      <svg style={backgroundPatternStyle} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="loginGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={isDark ? '#2563eb' : '#0ea5e9'} />
+            <stop offset="50%" stopColor={isDark ? '#7c3aed' : '#6366f1'} />
+            <stop offset="100%" stopColor={isDark ? '#ec4899' : '#a855f7'} />
+          </linearGradient>
+        </defs>
+        <g opacity="0.5">
+          <circle cx="150" cy="150" r="40" fill="none" stroke="url(#loginGradient)" strokeWidth="2" />
+          <circle cx="150" cy="150" r="30" fill="none" stroke="url(#loginGradient)" strokeWidth="1.5" />
+          <circle cx="150" cy="150" r="20" fill="url(#loginGradient)" />
+        </g>
+        <g opacity="0.4">
+          <rect x="350" y="100" width="200" height="6" fill="none" stroke="url(#loginGradient)" strokeWidth="2" rx="3" />
+          <rect x="350" y="100" width="150" height="6" fill="url(#loginGradient)" rx="3" />
+        </g>
+        <g opacity="0.35">
+          <rect x="350" y="130" width="200" height="6" fill="none" stroke="url(#loginGradient)" strokeWidth="2" rx="3" />
+          <rect x="350" y="130" width="120" height="6" fill="url(#loginGradient)" rx="3" />
+        </g>
+        <g opacity="0.5">
+          <polygon points="900,200 910,225 935,225 915,240 925,265 900,250 875,265 885,240 865,225 890,225" fill="url(#loginGradient)" />
+        </g>
+        <g opacity="0.35">
+          <polygon points="1000,300 1008,322 1032,322 1014,337 1022,359 1000,344 978,359 986,337 968,322 992,322" fill="url(#loginGradient)" />
+        </g>
+        <circle cx="100" cy="650" r="25" fill="none" stroke="url(#loginGradient)" strokeWidth="2" opacity="0.4" />
+        <circle cx="100" cy="650" r="15" fill="none" stroke="url(#loginGradient)" strokeWidth="1.5" opacity="0.3" />
+        <circle cx="1050" cy="600" r="8" fill="url(#loginGradient)" opacity="0.5" />
+        <circle cx="1000" cy="650" r="8" fill="url(#loginGradient)" opacity="0.4" />
+        <circle cx="1080" cy="680" r="8" fill="url(#loginGradient)" opacity="0.35" />
+      </svg>
       <Navbarhome />
       <div style={contentWrapperStyle}>
         <div style={cardStyle}>

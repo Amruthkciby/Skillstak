@@ -87,6 +87,8 @@ The dashboard auto-redirects to `/login` if tokens expire or a request returns 4
 | GET/POST| `/mainapp/learning-activities/`              | List or log learning activities      | Yes  |
 | POST   | `/mainapp/course-import/`                     | Import course metadata by URL        | Yes  |
 | POST   | `/mainapp/learning-summary/send-weekly/`      | Generate (mock) weekly summary email | Yes  |
+| POST   | `/mainapp/ai/resource-recommendations/`       | Get AI-powered learning recommendations | Yes  |
+| POST   | `/mainapp/ai/note-summarization/`             | Generate summaries from learning notes | Yes  |
 
 All authenticated endpoints rely on the JWT access token.
 
@@ -96,8 +98,50 @@ All authenticated endpoints rely on the JWT access token.
 - **Dark/Light Theme Toggle** via a global `ThemeProvider`; preference persists in `localStorage`.
 - **Responsive Layouts** with clean cards, forms, and tables.
 - **Dashboard** features goal CRUD, activity logging, course imports, insights, and a timeline view.
-- **User Menu** shows initials, name, email (in dropdown) and provides logout handling.
+- **AI-Powered Tools** with two dedicated features:
+  - **Resource Recommendations**: Analyzes your learning history to suggest new resources, skills, and platforms tailored to your level and preferences.
+  - **Note Summarization**: Automatically extracts key takeaways and topics from your learning notes across activities.
+- **User Menu** shows username only (no icon); dropdown displays email and logout button.
 - **API Integration** with built-in error handling, token storage, and redirects on auth failure.
+
+---
+
+## AI-Powered Learning Features
+
+### Resource Recommendations
+Access via the **"AI-Powered Learning Tools"** section on the dashboard or navigate directly to `/ai-features`.
+
+**What it does:**
+- Analyzes your learning goals and activity history
+- Identifies your top skills and learning patterns
+- Suggests platforms and resource types based on your preferences
+- Recommends difficulty progression paths
+- Advises on learning consistency
+
+**How it works:**
+1. Click **"Get Recommendations"** button on the dashboard
+2. AI engine analyzes: skill frequencies, platform preferences, difficulty ratings, resource types, and activity patterns
+3. Receive personalized recommendations with actionable insights
+4. View your learning profile statistics (total goals, activities, unique skills, average difficulty)
+
+### Note Summarization
+Access via the same `/ai-features` page.
+
+**What it does:**
+- Automatically summarizes your learning notes from activities
+- Extracts key topics and learnings
+- Groups summaries by skill (optional goal-specific summaries)
+- Provides learning timeline overview
+
+**How it works:**
+1. Click **"Summarize Notes"** button on the dashboard
+2. Optionally select a specific goal or leave empty for all goals
+3. AI generates:
+   - Total hours spent and session count
+   - Main topics covered
+   - Key learnings extracted from notes
+   - Detailed learning timeline
+4. Use insights to reinforce knowledge and identify gaps
 
 ---
 
